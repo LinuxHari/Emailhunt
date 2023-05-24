@@ -1,18 +1,21 @@
+#Importing Modules
 import sys
 import requests
 import re
 from urllib.parse import urlparse
 import tldextract
 
+#This method sends request to the passed url
 def req_url(url):
 	try:
-		res = requests.get(url).text
+		res = requests.get(url).text #Content of given url page will be stored in res in string format
 		return res
 	except requests.exceptions.RequestException as e:
 		print(f"Error fetching URL: {url}")
 		print(e)
-		sys.exit(1)
+		sys.exit(1) #This line refers that the program stopped in an abnormal way 
 
+#This method searches and fetches url that are related to given url domain and types of files that user desire to fetch
 def fetch_links_files(url, regexs):
     try:
         res = req_url(url)
@@ -21,7 +24,7 @@ def fetch_links_files(url, regexs):
         return ([], [])
     except KeyboardInterrupt:
         print("\nKeyboardInterrupt: Program terminated by user")
-        sys.exit(0)
+        sys.exit(0) #This line refers that the program has executed in normal way
     files = []
     urls = []
 
@@ -41,7 +44,7 @@ def fetch_links_files(url, regexs):
         print("\nKeyboardInterrupt: Program terminated by user")
         sys.exit(0)
     return (files,urls)
-
+#This method fetches emails using regex by fetch contents of files and urls found in webpage 
 def fetch_emails(url, files, urls):
     try:
         res = req_url(url)
@@ -52,7 +55,7 @@ def fetch_emails(url, files, urls):
         print("\nKeyboardInterrupt: Program terminated by user")
         sys.exit(0)
     emails = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', res)
-
+#Below for loop fetches emails from all fetched url contents
     for file in files:
         try:
             file_url = f'{url}/{file}'
@@ -63,6 +66,7 @@ def fetch_emails(url, files, urls):
         except KeyboardInterrupt:
             print("\nKeyboardInterrupt: Program terminated by user")
             sys.exit(0)
+#Below for loop fetches emails from all fetched file contents
     for url in urls:
         try:
             res = req_url(url)
@@ -74,6 +78,7 @@ def fetch_emails(url, files, urls):
             sys.exit(0)
     return rem_dup(emails)
 
+#This function returns top level domain of the url so that we can search for urls that belong to same domain from given url
 def find_domain(url):
 	try:
 		domain_extract = urlparse(url)
@@ -85,7 +90,7 @@ def find_domain(url):
 		print("Error: Invalid URL or unable to extract domain from URL")
 		return None
 
-
+#This method returns regular expressions from which types of files user want to fetch emails
 def regex_list(regexs):
 	regex_list = []
 	for regex in regexs:
@@ -115,6 +120,7 @@ def regex_list(regexs):
 				sys.exit(1)
 	return regex_list
 
+#This function removes duplicate values as set datatype does not contain any duplicate values
 def rem_dup(items):
         item_set = set(items)
         return list(item_set)
@@ -131,6 +137,9 @@ except:
 	print("\n")
 	print("File types can be html,php,asp,aspx,txt,json,xml,jsp,css,js")
 	sys.exit(1)
+	
+	
+	
 url_pattern = re.compile(r'^(http|https)://[^\s/$.?#].[^\s]*$')
 if not url_pattern.match(url):
     print("Error: Invalid URL format. Please provide a valid URL.")
